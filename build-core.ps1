@@ -30,8 +30,8 @@ if ($env:COSMOS_ZIG_TARGET) { $zigTarget = $env:COSMOS_ZIG_TARGET }
 if ($env:COSMOS_ZIG_CPU) { $zigCpu = $env:COSMOS_ZIG_CPU }
 Push-Location (Join-Path $root 'core'); try { & $go build -trimpath -ldflags '-s -w' -o $core .; if ($LASTEXITCODE -ne 0) { throw "Go build failed with exit code $LASTEXITCODE" } } finally { Pop-Location }
 $native = Join-Path (Join-Path $root 'native') 'cosmos-drive'; $cache = Join-Path (Join-Path $root '.tmp') 'cosmos-drive-zig-cache'; $obj = Join-Path $cache 'module.o'; New-Item -ItemType Directory -Force -Path $cache | Out-Null; $env:ZIG_GLOBAL_CACHE_DIR=(Join-Path $cache 'global'); $env:ZIG_LOCAL_CACHE_DIR=(Join-Path $cache 'local')
-& $zig cc -target $zigTarget -mcpu=$zigCpu -Os -fPIC -fvisibility=hidden -ffunction-sections -fdata-sections -c (Join-Path $native 'module.c') -o $obj; if ($LASTEXITCODE -ne 0) { throw "Zig compile failed with exit code $LASTEXITCODE" }
-$so = Join-Path $out 'libjsapi_cosmos_drive.so'; & $zig cc -target $zigTarget -mcpu=$zigCpu -shared -nostdlib '-Wl,--gc-sections' '-Wl,--hash-style=sysv' '-Wl,--build-id=none' '-Wl,-soname,libjsapi_cosmos_drive.so' $obj -o $so; if ($LASTEXITCODE -ne 0) { throw "Zig link failed with exit code $LASTEXITCODE" }
+& $zig cc -target $zigTarget ("-mcpu=$zigCpu") -Os -fPIC -fvisibility=hidden -ffunction-sections -fdata-sections -c (Join-Path $native 'module.c') -o $obj; if ($LASTEXITCODE -ne 0) { throw "Zig compile failed with exit code $LASTEXITCODE" }
+$so = Join-Path $out 'libjsapi_cosmos_drive.so'; & $zig cc -target $zigTarget ("-mcpu=$zigCpu") -shared -nostdlib '-Wl,--gc-sections' '-Wl,--hash-style=sysv' '-Wl,--build-id=none' '-Wl,-soname,libjsapi_cosmos_drive.so' $obj -o $so; if ($LASTEXITCODE -ne 0) { throw "Zig link failed with exit code $LASTEXITCODE" }
 
 foreach ($elf in @($core, $so)) {
   $bytes = [IO.File]::ReadAllBytes($elf)

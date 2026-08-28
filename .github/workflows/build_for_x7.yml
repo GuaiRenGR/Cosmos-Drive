@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: pwsh -NoProfile -File ./build-core.ps1 -Architecture "$CORE_ARCH"
       - name: Build AMR package
-        run: npm run build
+        run: npm run build:prod
       - name: Upload AMR artifact
         uses: actions/upload-artifact@v4
         with:

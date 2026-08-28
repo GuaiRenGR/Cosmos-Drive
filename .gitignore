@@ -1,0 +1,7 @@
+.falcon_/
+.falcon_tmp/
+.gocache/
+.temp/
+.tmp/
+dist/
+node_modules/

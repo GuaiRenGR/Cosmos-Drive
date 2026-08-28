@@ -25,7 +25,7 @@ if ($runningWindows) {
 $go = Find-Tool $goName 'GO_BINARY' $goCandidates
 $zig = Find-Tool $zigName 'ZIG_EXE' $zigCandidates
 $core = Join-Path $out 'cosmos-drive-core'; $env:GOOS='linux'; $env:CGO_ENABLED='0'; $env:GOMAXPROCS='1'; $env:GOMEMLIMIT='18MiB'; $env:GOGC='50'; $env:GOCACHE=(Join-Path $root '.gocache'); New-Item -ItemType Directory -Force -Path $env:GOCACHE | Out-Null
-if ($Architecture -eq 'aarch64') { $env:GOARCH = 'arm64'; Remove-Item Env:GOARM -ErrorAction SilentlyContinue; $zigTarget = 'aarch64-linux-musl'; $zigCpu = 'cortex_a53'; $elfMachine = 0xB7 } else { $env:GOARCH = 'arm'; $env:GOARM = '7'; $zigTarget = 'arm-linux-musleabihf'; $zigCpu = 'cortex_a7'; $elfMachine = 0x28 }
+if ($Architecture -eq 'aarch64') { $env:GOARCH = 'arm64'; Remove-Item Env:GOARM -ErrorAction SilentlyContinue; $zigTarget = 'aarch64-linux-musl'; $zigCpu = 'cortex_a53'; $elfClass = 2; $elfMachine = 0xB7 } else { $env:GOARCH = 'arm'; $env:GOARM = '7'; $zigTarget = 'arm-linux-musleabihf'; $zigCpu = 'cortex_a7'; $elfClass = 1; $elfMachine = 0x28 }
 if ($env:COSMOS_ZIG_TARGET) { $zigTarget = $env:COSMOS_ZIG_TARGET }
 if ($env:COSMOS_ZIG_CPU) { $zigCpu = $env:COSMOS_ZIG_CPU }
 Push-Location (Join-Path $root 'core'); try { & $go build -trimpath -ldflags '-s -w' -o $core .; if ($LASTEXITCODE -ne 0) { throw "Go build failed with exit code $LASTEXITCODE" } } finally { Pop-Location }
@@ -36,7 +36,7 @@ $so = Join-Path $out 'libjsapi_cosmos_drive.so'; & $zig cc -target $zigTarget ("
 foreach ($elf in @($core, $so)) {
   $bytes = [IO.File]::ReadAllBytes($elf)
   if ($bytes.Length -lt 20 -or $bytes[0] -ne 0x7f -or $bytes[1] -ne 0x45 -or $bytes[2] -ne 0x4c -or $bytes[3] -ne 0x46) { throw "$elf is not ELF" }
-  if ($bytes[4] -ne 1 -or $bytes[5] -ne 1 -or $bytes[18] -ne $elfMachine -or $bytes[19] -ne 0x00) { throw "$elf has an unexpected ELF machine for $Architecture" }
+  if ($bytes[4] -ne $elfClass -or $bytes[5] -ne 1 -or $bytes[18] -ne $elfMachine -or $bytes[19] -ne 0x00) { throw "$elf has an unexpected ELF class or machine for $Architecture" }
 }
 $symbols = (& $go tool nm $so 2>&1 | Out-String)
 if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect SO symbols' }

@@ -1,4 +1,4 @@
-name: Build For A7P & Upload AMR
+name: Build For X5 & Upload AMR
 
 on:
   push:
@@ -8,11 +8,11 @@ on:
     - cron: '0 0 * * *'
 
 env:
-  DEVICE: a7p
+  DEVICE: x5
   CORE_ARCH: armv7
-  COSMOS_ZIG_TARGET: arm-linux-musleabihf
+  COSMOS_ZIG_TARGET: arm-linux-gnueabihf
   COSMOS_ZIG_CPU: cortex_a7
-  TARGET_ABI: armv7
+  TARGET_ABI: armv7-glibc
 
 jobs:
   build:
@@ -51,7 +51,7 @@ jobs:
       - name: Upload AMR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cosmos-drive-a7p-amr
+          name: cosmos-drive-x5-amr
           path: '*.amr'
           if-no-files-found: error
           retention-days: 30

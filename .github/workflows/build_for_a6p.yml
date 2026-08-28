@@ -1,62 +1,53 @@
-name: Build Cosmos Drive for A6P
+name: Build For A6P & Upload AMR
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 env:
   DEVICE: a6p
+  CORE_ARCH: armv7
+  COSMOS_ZIG_TARGET: arm-linux-musleabihf
+  COSMOS_ZIG_CPU: cortex_a7
+  TARGET_ABI: armv7-uclibc
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Setup Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
+          cache: ''
       - name: Setup Go 1.20
         uses: actions/setup-go@v5
         with:
           go-version: '1.20.x'
           cache: false
-
       - name: Setup Zig 0.13
-        shell: pwsh
+        shell: bash
         run: |
-          $version = '0.13.0'
-          $archive = Join-Path $env:RUNNER_TEMP "zig-windows-x86_64-$version.zip"
-          $install = Join-Path $env:RUNNER_TEMP "zig-$version"
-          Invoke-WebRequest -Uri "https://ziglang.org/download/$version/zig-windows-x86_64-$version.zip" -OutFile $archive
-          if (Test-Path -LiteralPath $install) { Remove-Item -LiteralPath $install -Recurse -Force }
-          Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP
-          $zigRoot = Join-Path $env:RUNNER_TEMP "zig-windows-x86_64-$version"
-          Add-Content -Path $env:GITHUB_PATH -Value $zigRoot
-
-      - name: Install JavaScript dependencies
-        shell: pwsh
+          version=0.13.0
+          archive="$RUNNER_TEMP/zig-linux-x86_64-$version.tar.xz"
+          curl -fsSL "https://ziglang.org/download/$version/zig-linux-x86_64-$version.tar.xz" -o "$archive"
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/zig-linux-x86_64-$version" >> "$GITHUB_PATH"
+      - name: Install aiot-vue-cli and project dependencies
+        shell: bash
         run: |
           npm install --global aiot-vue-cli@0.1.32
+          aiot-cli --version
           npm install --no-audit --no-fund
-
       - name: Build ARMv7 core and JSAPI
-        shell: pwsh
-        run: npm run build:core
-
+        shell: bash
+        run: pwsh -NoProfile -File ./build-core.ps1 -Architecture "$CORE_ARCH"
       - name: Build AMR package
-        shell: pwsh
         run: npm run build
-
-      - name: Verify AMR package
-        shell: pwsh
-        run: |
-          $packages = @(Get-ChildItem -Path . -Filter '*.amr' -File)
-          if ($packages.Count -eq 0) { throw 'No AMR package was generated' }
-          $packages | Select-Object FullName, Length
-
       - name: Upload AMR artifact
         uses: actions/upload-artifact@v4
         with:

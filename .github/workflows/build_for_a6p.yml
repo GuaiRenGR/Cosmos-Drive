@@ -40,7 +40,7 @@ jobs:
       - name: Install aiot-vue-cli and project dependencies
         shell: bash
         run: |
-          npm install --global aiot-vue-cli@0.1.32
+          npm install --global aiot-vue-cli@1.0.32
           aiot-cli --version
           npm install --no-audit --no-fund
       - name: Build ARMv7 core and JSAPI

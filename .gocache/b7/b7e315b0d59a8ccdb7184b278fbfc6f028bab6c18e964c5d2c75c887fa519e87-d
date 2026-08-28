@@ -1,9 +1,0 @@
-./atomic_andor_generic.go
-./atomic_arm.go
-./doc.go
-./stubs.go
-./types.go
-./unaligned.go
-./xchg8.go
-./atomic_arm.s
-./sys_linux_arm.s

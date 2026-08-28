@@ -1,0 +1,64 @@
+name: Build Cosmos Drive for X7
+
+on:
+  workflow_dispatch:
+
+env:
+  DEVICE: x7
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Go 1.20
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.20.x'
+          cache: false
+
+      - name: Setup Zig 0.13
+        shell: pwsh
+        run: |
+          $version = '0.13.0'
+          $archive = Join-Path $env:RUNNER_TEMP "zig-windows-x86_64-$version.zip"
+          Invoke-WebRequest -Uri "https://ziglang.org/download/$version/zig-windows-x86_64-$version.zip" -OutFile $archive
+          Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP -Force
+          $zigRoot = Join-Path $env:RUNNER_TEMP "zig-windows-x86_64-$version"
+          Add-Content -Path $env:GITHUB_PATH -Value $zigRoot
+
+      - name: Install JavaScript dependencies
+        shell: pwsh
+        run: |
+          npm install --global aiot-vue-cli@0.1.32
+          npm install --no-audit --no-fund
+
+      - name: Build ARMv7 core and JSAPI
+        shell: pwsh
+        run: npm run build:core
+
+      - name: Build AMR package
+        shell: pwsh
+        run: npm run build
+
+      - name: Verify AMR package
+        shell: pwsh
+        run: |
+          $packages = @(Get-ChildItem -Path . -Filter '*.amr' -File)
+          if ($packages.Count -eq 0) { throw 'No AMR package was generated' }
+          $packages | Select-Object FullName, Length
+
+      - name: Upload AMR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosmos-drive-x7-amr
+          path: '*.amr'
+          if-no-files-found: error
+          retention-days: 30

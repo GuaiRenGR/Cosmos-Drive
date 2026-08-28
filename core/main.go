@@ -1,4 +1,4 @@
-﻿package main
+package main
 
 import (
 	"bufio"
@@ -35,7 +35,7 @@ type Config struct {
 	TLS      bool   `json:"tls"`
 }
 type Item struct {
-	RawName string `json:\"rawName\"`
+	RawName string `json:"rawName"`
 	Name    string `json:"name"`
 	Folder  bool   `json:"folder"`
 	Size    int64  `json:"size"`
@@ -343,20 +343,80 @@ func davList(c Config, p string) ([]Item, error) {
 	if e = xml.NewDecoder(res.Body).Decode(&ms); e != nil {
 		return nil, e
 	}
+	requestedURL := davURL(c, p)
 	out := []Item{}
 	for _, r := range ms.Responses {
 		if len(r.PropStats) == 0 {
 			continue
 		}
-		raw := path.Base(strings.TrimRight(r.Href, "/"))
+		hrefPath := davHrefPath(r.Href)
+		if sameDAVResource(requestedURL, r.Href) {
+			continue
+		}
+		raw := path.Base(strings.TrimRight(hrefPath, "/"))
 		n := decodeRemoteName(raw)
-		if n == "" || n == decodeRemoteName(path.Base(strings.TrimRight(p, "/"))) {
+		if n == "" {
 			continue
 		}
 		pr := r.PropStats[0].Prop
 		out = append(out, Item{RawName: raw, Name: n, Folder: pr.ResourceType.Collection != nil, Size: pr.Length, ModTime: pr.Modified})
 	}
 	return out, nil
+}
+
+// WebDAV servers include the PROPFIND target itself in a Depth 1 response.
+// Compare canonical URL paths so a mounted endpoint such as /dav/ is skipped
+// even when the application asks for its logical root (/).
+func davHrefPath(raw string) string {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return ""
+	}
+	if u, err := url.Parse(value); err == nil {
+		if escaped := u.EscapedPath(); escaped != "" {
+			value = escaped
+		} else if u.Path != "" {
+			value = u.Path
+		}
+	}
+	if decoded, err := url.PathUnescape(value); err == nil {
+		value = decoded
+	}
+	return value
+}
+
+func canonicalDAVPath(raw string) string {
+	p := davHrefPath(raw)
+	if p == "" {
+		return "/"
+	}
+	if decoded, err := url.PathUnescape(p); err == nil {
+		p = decoded
+	}
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	p = path.Clean(p)
+	if p == "." {
+		return "/"
+	}
+	return p
+}
+
+func sameDAVResource(requestedURL, href string) bool {
+	requestedPath := canonicalDAVPath(requestedURL)
+	if canonicalDAVPath(href) == requestedPath {
+		return true
+	}
+	// A few servers return a relative href. Resolve it against the request
+	// URL before comparing, while retaining the direct path comparison above
+	// for the common `dav/` response form.
+	req, reqErr := url.Parse(requestedURL)
+	ref, refErr := url.Parse(strings.TrimSpace(href))
+	if reqErr != nil || refErr != nil || ref.IsAbs() {
+		return false
+	}
+	return canonicalDAVPath(req.ResolveReference(ref).String()) == requestedPath
 }
 
 func decodeRemoteName(name string) string {

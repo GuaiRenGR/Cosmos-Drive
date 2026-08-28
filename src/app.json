@@ -1,6 +1,9 @@
 {
   "pages": {
-    "index": "pages/index/index.vue"
+    "index": "pages/index/index.js",
+    "picker": "pages/picker/index.js",
+    "local": "pages/local/index.vue",
+    "about": "pages/about/index.vue"
   },
   "options": {
       "style": {

@@ -1,6 +1,11 @@
-﻿package main
+package main
 
-import "testing"
+import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
 func TestDecodeRemoteName(t *testing.T) {
 	for _, tc := range []struct {
@@ -29,5 +34,46 @@ func TestParseFTPListDecodesNames(t *testing.T) {
 	}
 	if items[1].Name != "folder one" || items[1].RawName != "folder%20one" || !items[1].Folder {
 		t.Fatalf("unexpected folder item: %+v", items[1])
+	}
+}
+
+func TestCanonicalDAVPathSkipsMountedRoot(t *testing.T) {
+	c := Config{Host: "https://example.test/dav", BasePath: "/"}
+	want := "/dav"
+	if got := canonicalDAVPath(davURL(c, "/")); got != want {
+		t.Fatalf("canonicalDAVPath(request) = %q, want %q", got, want)
+	}
+	for _, href := range []string{"https://example.test/dav/", "/dav/", "/%64%61%76/", "dav/"} {
+		if !sameDAVResource(davURL(c, "/"), href) {
+			t.Fatalf("sameDAVResource(%q) did not match mounted root", href)
+		}
+	}
+	if got := canonicalDAVPath("https://example.test/dav/file.txt"); got == want {
+		t.Fatalf("file path %q was treated as mounted root", got)
+	}
+}
+
+func TestDAVListSkipsMountedRootResponse(t *testing.T) {
+	var server *httptest.Server
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "PROPFIND" {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "application/xml")
+		_, _ = fmt.Fprintf(w, `<?xml version="1.0" encoding="utf-8"?>
+<multistatus xmlns="DAV:">
+  <response><href>%s/dav/</href><propstat><prop><resourcetype><collection/></resourcetype></prop></propstat></response>
+  <response><href>%s/dav/file.txt</href><propstat><prop><getcontentlength>12</getcontentlength></prop></propstat></response>
+</multistatus>`, server.URL, server.URL)
+	}))
+	defer server.Close()
+
+	items, err := davList(Config{Host: server.URL + "/dav", BasePath: "/"}, "/")
+	if err != nil {
+		t.Fatalf("davList returned error: %v", err)
+	}
+	if len(items) != 1 || items[0].Name != "file.txt" {
+		t.Fatalf("davList returned mounted target: %+v", items)
 	}
 }

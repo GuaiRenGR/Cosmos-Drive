@@ -1,0 +1,36 @@
+D:\Projects\miniapp\cosmos-drive\.tmp\cosmos-drive-zig-cache\local\tmp\56be155d8b40bdce-module.o: \
+  D:/Projects/miniapp/cosmos-drive/native/cosmos-drive/module.c \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/errno.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/features.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/bits/errno.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/dirent.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/arm-linux-musl/bits/alltypes.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/bits/dirent.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/fcntl.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/arm-linux-musl/bits/fcntl.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/limits.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/limits.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/bits/limits.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/signal.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/arm-linux-musl/bits/signal.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/stdlib.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/alloca.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/stdio.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/string.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/strings.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/sys/types.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/endian.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/sys/select.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/unistd.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/bits/posix.h \
+  D:/Projects/miniapp/cosmos-drive/native/cosmos-drive/quickjs-compat.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/stdint.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/generic-musl/stdint.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/libc/include/arm-linux-musl/bits/stdint.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/stddef.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/__stddef_ptrdiff_t.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/__stddef_size_t.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/__stddef_wchar_t.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/__stddef_null.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/__stddef_max_align_t.h \
+  C:/SDK/zig-windows-x86_64-0.13.0/lib/include/__stddef_offsetof.h

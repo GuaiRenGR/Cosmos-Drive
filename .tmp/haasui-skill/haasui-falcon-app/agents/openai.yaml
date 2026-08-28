@@ -1,0 +1,7 @@
+interface:
+  display_name: "有道词典笔 Falcon 开发"
+  short_description: "跨机型开发有道词典笔 Falcon 应用"
+  default_prompt: "Use $haasui-falcon-app to profile the target Youdao Dictionary Pen, implement the Falcon change, and verify it on the correct device ABI."
+
+policy:
+  allow_implicit_invocation: true

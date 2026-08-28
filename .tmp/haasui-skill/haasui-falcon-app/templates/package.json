@@ -1,0 +1,26 @@
+{
+  "name": "my-falcon-app",
+  "appid": "8000000000000001",
+  "version": "1.0.0",
+  "description": "NetEase Youdao Dictionary Pen Falcon mini-app template",
+  "quickjs": { "version": "20200705", "bigNum": false },
+  "simulator": { "path": "../haas_sim", "page": "" },
+  "single-js-bundle": false,
+  "scripts": {
+    "start": "aiot-cli preview",
+    "build": "aiot-cli -p",
+    "build:dev": "aiot-cli",
+    "build:bin": "aiot-cli -q -p",
+    "build:prod": "aiot-cli -c -q -p",
+    "build:web": "aiot-cli build-web",
+    "build:simulator": "aiot-cli simulator ./",
+    "upload": "aiot-cli upload -n",
+    "check": "aiot-cli check"
+  },
+  "keywords": ["youdao", "dictionary-pen", "falcon", "miniapp"],
+  "dependencies": {
+    "falcon-ui": "^1.0.3",
+    "js-base64": "^3.7.5",
+    "js-md5": "^0.7.3"
+  }
+}

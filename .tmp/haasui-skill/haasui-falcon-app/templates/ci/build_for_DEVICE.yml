@@ -1,0 +1,50 @@
+name: build Youdao Dictionary Pen profile
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "Profile id under profiles/<id>.env"
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_PROFILE_ID: ${{ inputs.profile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Load explicit target profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROFILE="profiles/${TARGET_PROFILE_ID}.env"
+          test -f "$PROFILE"
+          sed '/^[[:space:]]*#/d;/^[[:space:]]*$/d' "$PROFILE" >> "$GITHUB_ENV"
+
+      - name: Install UI dependencies
+        run: npm ci
+
+      - name: Provision exact toolchain and sysroot
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${TOOLCHAIN_SETUP_COMMAND:?Define TOOLCHAIN_SETUP_COMMAND in the profile}"
+          bash -lc "$TOOLCHAIN_SETUP_COMMAND"
+
+      - name: Build profile
+        shell: bash
+        run: ./tools/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: youdao-${{ inputs.profile }}
+          path: dist/${{ inputs.profile }}/*
+          if-no-files-found: error
+          retention-days: 30
